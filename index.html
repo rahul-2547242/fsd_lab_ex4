@@ -35,7 +35,6 @@
                     <option value="BBA">BBA</option>
                 </select>
             </div>
-
         </fieldset>
 
         <fieldset class="border-2 border-gray-400 p-4 my-4">
@@ -54,7 +53,6 @@
                     <span id="char">0</span> Characters
                 </div>
             </div>
-
         </fieldset>
 
         <div class="flex space-x-4">
@@ -66,10 +64,7 @@
     <hr class="border border-violet-800 my-4">
 
     <h2 class="text-2xl text-indigo-800">Comments Posted</h2>
-
-    <div id="feedbacks-container" class="mt-4 space-y-2">
-        <!-- Feedback cards will be inserted here -->
-    </div>
+    <div id="comments-container" class="mt-4 space-y-2"></div>
 
     <script>
         // DOM Elements
@@ -77,16 +72,15 @@
         const wordDisplay = document.getElementById('word');
         const charDisplay = document.getElementById('char');
         const feedbackForm = document.getElementById('feedback-form');
-        const feedbacksContainer = document.getElementById('feedbacks-container');
+        const commentsContainer = document.getElementById('comments-container');
 
-        // Load feedbacks when page loads
-        loadFeedbacks();
+        // Load comments when page loads
+        loadComments();
 
         // Word count update
         commentField.addEventListener('input', () => {
             const content = commentField.value;
             charDisplay.textContent = content.length;
-            
             const words = content.trim().split(/\s+/).filter(word => word.length > 0);
             wordDisplay.textContent = words.length;
         });
@@ -100,53 +94,49 @@
                 dept: document.getElementById('dept').value,
                 rating: document.getElementById('ratings').value,
                 comment: document.getElementById('comment').value,
-                date: new Date().toLocaleDateString()
+                date: new Date().toLocaleString()
             };
 
-            saveFeedback(feedback);
-            addFeedbackToUI(feedback);
+            saveComment(feedback);
+            displayComments();
             feedbackForm.reset();
             wordDisplay.textContent = '0';
             charDisplay.textContent = '0';
         });
 
-        // Save to localStorage
-        function saveFeedback(feedback) {
-            const feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
-            feedbacks.push(feedback);
-            localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+        // Save to sessionStorage
+        function saveComment(feedback) {
+            const comments = JSON.parse(sessionStorage.getItem('feedbackComments')) || [];
+            comments.push(feedback);
+            sessionStorage.setItem('feedbackComments', JSON.stringify(comments));
         }
 
-        // Load from localStorage
-        function loadFeedbacks() {
-            const feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
-            
-            if (feedbacks.length === 0) {
-                feedbacksContainer.innerHTML = '<p class="text-gray-600">No feedbacks yet.</p>';
+        // Load from sessionStorage
+        function loadComments() {
+            displayComments();
+        }
+
+        // Display comments
+        function displayComments() {
+            const comments = JSON.parse(sessionStorage.getItem('feedbackComments')) || [];
+            commentsContainer.innerHTML = '';
+
+            if (comments.length === 0) {
+                commentsContainer.innerHTML = '<p class="text-gray-600">No comments exist yet.</p>';
                 return;
             }
 
-            feedbacks.forEach(addFeedbackToUI);
-        }
-
-        // Add feedback to UI
-        function addFeedbackToUI(feedback) {
-            const feedbackCard = document.createElement('div');
-            feedbackCard.className = 'bg-white p-3 border rounded';
-            feedbackCard.innerHTML = `
-                <p><strong>${feedback.name}</strong> (${feedback.dept}) - ${feedback.rating}/5</p>
-                <p class="my-1">${feedback.comment}</p>
-                <p class="text-sm text-gray-500">${feedback.date}</p>
-            `;
-            
-            if (feedbacksContainer.firstChild?.tagName === 'P') {
-                feedbacksContainer.removeChild(feedbacksContainer.firstChild);
-            }
-            
-            feedbacksContainer.prepend(feedbackCard);
+            comments.forEach(comment => {
+                const commentElement = document.createElement('div');
+                commentElement.className = 'bg-white p-3 border rounded mb-2';
+                commentElement.innerHTML = `
+                    <p><strong>${comment.name}</strong> (${comment.dept}) - ${comment.rating}/5</p>
+                    <p class="my-1">${comment.comment}</p>
+                    <p class="text-sm text-gray-500">${comment.date}</p>
+                `;
+                commentsContainer.appendChild(commentElement);
+            });
         }
     </script>
-
 </body>
-
 </html>
