@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Feedback Form</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-blue-100 p-6 m-4">
+
+    <h2 class="text-2xl text-center text-indigo-800 underline">Feedback Form</h2>
+
+    <form id="feedback-form">
+        <fieldset class="border-2 border-gray-400 p-4 my-4">
+            <legend class="text-xl text-indigo-800">Personal Details</legend>
+
+            <div class="mb-4">
+                <label for="user-name" class="block mb-1 text-violet-800">Enter your full name:</label>
+                <input type="text" id="user-name" class="w-full p-2 border rounded" placeholder="Your Full Name" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="user-email" class="block mb-1 text-violet-800">Enter your email:</label>
+                <input type="email" id="user-email" class="w-full p-2 border rounded" placeholder="Your Email" required>
+            </div>
+
+            <div class="mb-4">
+                <label for="dept" class="block mb-1 text-violet-800">Select your Department:</label>
+                <select id="dept" name="dept" title="dept" required class="block mb-1 w-full border-2 text-lg p-2">
+                    <option value="BSc">BSc</option>
+                    <option value="BCom">BCom</option>
+                    <option value="BCA">BCA</option>
+                    <option value="BBA">BBA</option>
+                </select>
+            </div>
+
+        </fieldset>
+
+        <fieldset class="border-2 border-gray-400 p-4 my-4">
+            <legend class="text-xl text-indigo-800">Feedback</legend>
+
+            <div class="mb-4">
+                <label for="ratings" class="block mb-1 text-violet-800">Enter Ratings (1-5):</label>
+                <input type="range" id="ratings" min="1" max="5" value="3" step="1" class="w-full border-2 p-2 accent-violet-600 border-2 border-violet-600 rounded">
+            </div>
+
+            <div class="mb-4">
+                <label for="comment" class="block mb-1 text-violet-800">Enter Comment:</label>
+                <textarea id="comment" rows="4" class="w-full p-2 border rounded text-lg" placeholder="Your comment" required></textarea>
+                <div class="text-lg text-white bg-violet-600 mt-1 text-center p-2">
+                    <span id="word">0</span> Words and
+                    <span id="char">0</span> Characters
+                </div>
+            </div>
+
+        </fieldset>
+
+        <div class="flex space-x-4">
+            <button type="submit" class="bg-indigo-800 text-white rounded w-full my-2 p-3">Submit</button>
+            <button type="reset" class="bg-gray-500 text-white rounded w-full my-2 p-3">Reset</button>
+        </div>
+    </form>
+
+    <hr class="border border-violet-800 my-4">
+
+    <h2 class="text-2xl text-indigo-800">Comments Posted</h2>
+
+    <div id="feedbacks-container" class="mt-4 space-y-2">
+        <!-- Feedback cards will be inserted here -->
+    </div>
+
+    <script>
+        // DOM Elements
+        const commentField = document.getElementById('comment');
+        const wordDisplay = document.getElementById('word');
+        const charDisplay = document.getElementById('char');
+        const feedbackForm = document.getElementById('feedback-form');
+        const feedbacksContainer = document.getElementById('feedbacks-container');
+
+        // Load feedbacks when page loads
+        loadFeedbacks();
+
+        // Word count update
+        commentField.addEventListener('input', () => {
+            const content = commentField.value;
+            charDisplay.textContent = content.length;
+            
+            const words = content.trim().split(/\s+/).filter(word => word.length > 0);
+            wordDisplay.textContent = words.length;
+        });
+
+        // Form submission
+        feedbackForm.addEventListener('submit', (e) => {
+            e.preventDefault();
+            
+            const feedback = {
+                name: document.getElementById('user-name').value,
+                dept: document.getElementById('dept').value,
+                rating: document.getElementById('ratings').value,
+                comment: document.getElementById('comment').value,
+                date: new Date().toLocaleDateString()
+            };
+
+            saveFeedback(feedback);
+            addFeedbackToUI(feedback);
+            feedbackForm.reset();
+            wordDisplay.textContent = '0';
+            charDisplay.textContent = '0';
+        });
+
+        // Save to localStorage
+        function saveFeedback(feedback) {
+            const feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
+            feedbacks.push(feedback);
+            localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
+        }
+
+        // Load from localStorage
+        function loadFeedbacks() {
+            const feedbacks = JSON.parse(localStorage.getItem('feedbacks')) || [];
+            
+            if (feedbacks.length === 0) {
+                feedbacksContainer.innerHTML = '<p class="text-gray-600">No feedbacks yet.</p>';
+                return;
+            }
+
+            feedbacks.forEach(addFeedbackToUI);
+        }
+
+        // Add feedback to UI
+        function addFeedbackToUI(feedback) {
+            const feedbackCard = document.createElement('div');
+            feedbackCard.className = 'bg-white p-3 border rounded';
+            feedbackCard.innerHTML = `
+                <p><strong>${feedback.name}</strong> (${feedback.dept}) - ${feedback.rating}/5</p>
+                <p class="my-1">${feedback.comment}</p>
+                <p class="text-sm text-gray-500">${feedback.date}</p>
+            `;
+            
+            if (feedbacksContainer.firstChild?.tagName === 'P') {
+                feedbacksContainer.removeChild(feedbacksContainer.firstChild);
+            }
+            
+            feedbacksContainer.prepend(feedbackCard);
+        }
+    </script>
+
+</body>
+
+</html>
